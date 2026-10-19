@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>Do Best Order</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0e27; color: #e0e0e0;
+            min-height: 100vh; padding: 20px; position: relative; overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background: linear-gradient(transparent 50%, rgba(0,247,255,0.03) 50%);
+            background-size: 100% 4px; pointer-events: none; z-index: 9999;
+            animation: scan 10s linear infinite;
+        }
+        @keyframes scan { 0%{transform:translateY(-100%)} 100%{transform:translateY(100%)} }
+        .container { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+
+        .header {
+            background: rgba(10,14,39,0.9); padding: 20px 25px; border-radius: 10px; margin-bottom: 20px;
+            border: 1px solid #00f7ff; box-shadow: 0 0 15px rgba(0,247,255,0.2);
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { color: #00f7ff; font-size: 24px; font-weight: 700; text-shadow: 0 0 10px rgba(0,247,255,0.5); }
+        .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .pill { font-size: 11px; color: #a0a0e0; border: 1px solid #2a2f5a; border-radius: 20px; padding: 4px 10px; }
+        .pill b { color: #00f7ff; }
+
+        .filters {
+            background: rgba(10,14,39,0.9); padding: 15px 20px; border-radius: 10px; margin-bottom: 20px;
+            border: 1px solid #00f7ff; box-shadow: 0 0 10px rgba(0,247,255,0.2);
+            display: flex; flex-wrap: wrap; gap: 14px 12px; align-items: flex-end;
+        }
+        .filter-item { display: flex; flex-direction: column; gap: 4px; }
+        .filter-item > span { color: #a0a0e0; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .filter-btns { flex-direction: row; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .filter-info { flex-basis: 100%; color: #00f7ff; font-size: 12px; font-weight: 600; }
+
+        .month-select, .search-input {
+            padding: 8px 12px; border: 1px solid #00f7ff; border-radius: 6px; font-size: 13px;
+            background: #0a0e27; color: #00f7ff; cursor: pointer; transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+        .month-select:hover { box-shadow: 0 0 10px rgba(0,247,255,0.3); }
+        input[type="date"].month-select { color-scheme: dark; padding: 7px 10px; min-width: 150px; }
+        .btn-refresh {
+            padding: 8px 16px; background: transparent; color: #00f7ff; border: 1px solid #00f7ff;
+            border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;
+            transition: all 0.3s ease; font-family: 'Courier New', monospace;
+        }
+        .btn-refresh:hover { background: rgba(0,247,255,0.1); box-shadow: 0 0 15px rgba(0,247,255,0.3); }
+        .btn-refresh:disabled { opacity: .5; cursor: wait; }
+
+        .error-box {
+            background: rgba(255,51,102,0.12); border: 1px solid #ff3366; color: #ff9db0;
+            padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; line-height: 1.5;
+        }
+
+        .stats-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 15px; margin-bottom: 20px; }
+        .card {
+            background: rgba(10,14,39,0.9); padding: 20px; border-radius: 10px; border: 1px solid #00f7ff;
+            box-shadow: 0 0 10px rgba(0,247,255,0.2); text-align: center; transition: all 0.3s ease;
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 0 20px rgba(0,247,255,0.4); }
+        .card h3 { color: #a0a0e0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .stat-number { font-size: 32px; font-weight: 700; color: #00f7ff; text-shadow: 0 0 10px rgba(0,247,255,0.5); }
+
+        .charts-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 15px; margin-bottom: 20px; }
+        .chart-container {
+            background: rgba(10,14,39,0.9); padding: 15px; border-radius: 10px; border: 1px solid #00f7ff;
+            box-shadow: 0 0 10px rgba(0,247,255,0.2); max-height: 300px;
+        }
+        .chart-container canvas { max-height: 250px; width: 100% !important; }
+
+        .table-section { background: rgba(10,14,39,0.9); padding: 20px; border-radius: 10px; border: 1px solid #00f7ff; box-shadow: 0 0 10px rgba(0,247,255,0.2); }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 15px; }
+        .table-header h2 { color: #00f7ff; font-size: 20px; text-shadow: 0 0 10px rgba(0,247,255,0.5); }
+        .search-input { width: 240px; }
+        .search-input:focus { outline: none; box-shadow: 0 0 15px rgba(0,247,255,0.3); width: 300px; }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: rgba(0,247,255,0.1); color: #00f7ff; border-bottom: 2px solid #00f7ff; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgba(0,247,255,0.2); font-size: 12px; white-space: nowrap; }
+        th { font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+        tbody tr { transition: all 0.3s ease; }
+        tbody tr:hover { background: rgba(0,247,255,0.05); }
+        td.wrap { white-space: normal; min-width: 160px; }
+        .status-badge { padding: 4px 8px; border-radius: 15px; font-size: 11px; font-weight: 600; display: inline-block; border: 1px solid; }
+        .status-sent { background: rgba(0,247,255,0.1); color: #00f7ff; border-color: #00f7ff; }
+        .status-approved { background: rgba(176,38,255,0.1); color: #b026ff; border-color: #b026ff; }
+        .status-ready { background: rgba(255,165,0,0.1); color: #ffa500; border-color: #ffa500; }
+        .priority-high { color: #ff3366; font-weight: 700; text-shadow: 0 0 5px rgba(255,51,102,0.5); }
+        .priority-normal { color: #00f7ff; }
+        .loading { text-align: center; padding: 15px; color: #00f7ff; font-size: 14px; font-weight: 600; }
+        .hidden { display: none !important; }
+        .empty { text-align: center; padding: 25px; color: #a0a0e0; font-size: 14px; }
+        .animate-fade-in { animation: fadeIn 0.6s ease-in; }
+        .animate-slide-up { animation: slideUp 0.6s ease-out; }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header animate-fade-in">
+            <h1>📊 Do Best Order</h1>
+            <div class="controls">
+                <span class="pill">Fuente: <b id="sourceLabel">—</b></span>
+                <span class="pill">Actualizado: <b id="updatedLabel">—</b></span>
+                <button id="refreshBtn" class="btn-refresh">🔄 Actualizar</button>
+            </div>
+        </header>
+
+        <div id="errorBox" class="error-box hidden"></div>
+
+        <div class="filters animate-slide-up">
+            <div class="filter-item"><span>Año</span><select id="yearSelector" class="month-select"></select></div>
+            <div class="filter-item"><span>Mes (pestaña)</span><select id="monthSelector" class="month-select"></select></div>
+            <div class="filter-item"><span>Desde</span><input type="date" id="fechaDesde" class="month-select"></div>
+            <div class="filter-item"><span>Hasta</span><input type="date" id="fechaHasta" class="month-select"></div>
+            <div class="filter-item"><span>Estado</span><select id="estadoSelector" class="month-select"></select></div>
+            <div class="filter-item"><span>Tipo</span><select id="tipoSelector" class="month-select"></select></div>
+            <div class="filter-item"><span>Prioridad</span>
+                <select id="prioridadSelector" class="month-select">
+                    <option value="">Todas</option>
+                    <option value="alta">⚠️ Alta</option>
+                    <option value="normal">Normal</option>
+                </select>
+            </div>
+            <div class="filter-item filter-btns">
+                <button id="qDia" class="btn-refresh" title="Día más reciente con órdenes">Últ. día</button>
+                <button id="q7" class="btn-refresh" title="Últimos 7 días con datos">7 días</button>
+                <button id="q30" class="btn-refresh" title="Últimos 30 días con datos">30 días</button>
+                <button id="qMes" class="btn-refresh" title="Mes más reciente con datos">Mes reciente</button>
+                <button id="clearAll" class="btn-refresh">♻️ Limpiar</button>
+            </div>
+            <div id="filterInfo" class="filter-info"></div>
+        </div>
+
+        <div class="stats-cards animate-slide-up">
+            <div class="card"><h3>Total Órdenes</h3><p id="totalOrders" class="stat-number">0</p></div>
+            <div class="card"><h3>Completadas</h3><p id="completedOrders" class="stat-number">0</p></div>
+            <div class="card"><h3>En Proceso</h3><p id="inProgressOrders" class="stat-number">0</p></div>
+            <div class="card"><h3>Prioridad Alta</h3><p id="highPriority" class="stat-number">0</p></div>
+        </div>
+
+        <div class="charts-section animate-slide-up">
+            <div class="chart-container"><canvas id="statusChart"></canvas></div>
+            <div class="chart-container"><canvas id="typeChart"></canvas></div>
+        </div>
+
+        <div class="table-section animate-slide-up">
+            <div class="table-header">
+                <h2>📋 Lista de Órdenes</h2>
+                <input type="text" id="searchInput" placeholder="🔍 Buscar (ID, orden, AP, comentario...)" class="search-input">
+            </div>
+            <div class="table-wrapper">
+                <table id="ordersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Fecha</th><th>Estado</th><th>Prioridad</th><th>Tipo</th>
+                            <th>Orden</th><th>Sets</th><th>Piezas</th><th>AP</th><th>QC</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersBody"></tbody>
+                </table>
+            </div>
+            <div id="emptyMsg" class="empty hidden">No hay órdenes con estos filtros.</div>
+            <div id="loading" class="loading hidden">Cargando datos...</div>
+        </div>
+    </div>
+
+    <script>
+    /* ============================================================
+       CONFIGURACIÓN
+       ============================================================ */
+    const SHEET_ID = '1rv4QAZHayNvA7VDKtDW9TTMsZ_tZNJn_Pz2vGy8GJoI';
+    const API_KEY  = 'AIzaSyD26QDkfDmTs6LX4E-HljLY0UjfP3jXrSs';
+    const REFRESCO_MS = 60000;
+
+    const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const CAMPOS = ['ID','FECHA','ESTADO','PRIORIDAD','TIPO','ORDEN','SETS','PIEZAS','AP','QC'];
+
+    /* índices del arreglo canónico que consume la interfaz */
+    const SALIDA = { ID:0, FECHA:1, ESTADO:2, PRIORIDAD:3, TIPO:5, ORDEN:7, SETS:9, PIEZAS:10, AP:14, QC:16, MES:24, FECHA_NUM:25 };
+    const COL = SALIDA;
+
+    const SINONIMOS = {
+        ID:        ['id','no','no.','numero','número','ref','referencia'],
+        FECHA:     ['fecha','send date','date','envio','envío'],
+        ESTADO:    ['estado','status'],
+        PRIORIDAD: ['prioridad','priority','prio','urgente'],
+        TIPO:      ['tipo','type','producto','product'],
+        ORDEN:     ['orden','order','sales order'],
+        SETS:      ['sets','set','juegos','juego'],
+        PIEZAS:    ['piezas','piez','pieces','piece','pcs','qty','cant','quantity','unidades','units'],
+        AP:        ['ap','artista','artist','arte'],
+        QC:        ['qc','quality','calidad','revision','revisión','comment','comentario','comentarios','nota','note','observacion','observación']
+    };
+    const SOLO_EXACTO = ['id'];
+
+    let allData = [], cargando = false, primeraCarga = true;
+    let statusChart = null, typeChart = null;
+    let ultimaFuente = '', ultimoError = '';
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (v) => String(v == null ? '' : v)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+    /* ============================================================
+       DETECCIÓN DE ENCABEZADOS
+       ============================================================ */
+    const norm = (s) => String(s == null ? '' : s)
+        .toLowerCase().replace(/\s+/g,' ').trim().replace(/^[^a-z0-9]+/, '');
+
+    function coincide(headerNorm, campo, permitirParcial) {
+        const syns = SINONIMOS[campo] || [];
+        for (const s of syns) {
+            if (!s) continue;
+            if (headerNorm === s) return true;
+            if (!permitirParcial || SOLO_EXACTO.includes(s)) continue;
+            if (s.length <= 3) {
+                const e = s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+                if (new RegExp('(^|[^a-z0-9])' + e + '([^a-z0-9]|$)').test(headerNorm)) return true;
+            } else if (headerNorm.indexOf(s) >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function contarCoincidencias(row) {
+        let n = 0;
+        CAMPOS.forEach(f => {
+            for (let c = 0; c < row.length; c++) {
+                if (coincide(norm(row[c]), f, true)) { n++; return; }
+            }
+        });
+        return n;
+    }
+
+    function detectarMapa(headerRow) {
+        const mapa = {};
+        CAMPOS.forEach(f => {
+            mapa[f] = -1;
+            for (let c = 0; c < headerRow.length; c++) {          // 1) coincidencia exacta
+                if (coincide(norm(headerRow[c]), f, false)) { mapa[f] = c; break; }
+            }
+            if (mapa[f] < 0) {
+                for (let c = 0; c < headerRow.length; c++) {      // 2) coincidencia parcial
+                    if (coincide(norm(headerRow[c]), f, true)) { mapa[f] = c; break; }
+                }
+            }
+        });
+        return mapa;
+    }
+
+    function mapaFijo() {
+        return { ID:0, FECHA:1, ESTADO:2, PRIORIDAD:3, TIPO:5, ORDEN:7, SETS:9, PIEZAS:10, AP:14, QC:16 };
+    }
+
+    function filaVacia(row) {
+        for (let c = 0; c < row.length; c++) {
+            if (row[c] !== '' && row[c] != null) return false;
+        }
+        return true;
+    }
+
+    function analizarHoja(values) {
+        const limite = Math.min(values.length, 60);
+        let mejorFila = 0, mejorPuntaje = 0;
+        for (let i = 0; i < limite; i++) {
+            const p = contarCoincidencias(values[i]);
+            if (p > mejorPuntaje) { mejorPuntaje = p; mejorFila = i; }
+        }
+
+        let headerRowIndex, sinEncabezados = false;
+        if (mejorPuntaje >= 3) headerRowIndex = mejorFila;
+        else { headerRowIndex = 0; sinEncabezados = true; }
+
+        const mapa = sinEncabezados ? mapaFijo() : detectarMapa(values[headerRowIndex] || []);
+        if (!mapa || mapa.ID < 0 || mapa.ID == null) mapa.ID = 0;   // la hoja siempre trae el ID en la 1ª columna
+
+        const rows = [];
+        for (let r = headerRowIndex + 1; r < values.length; r++) {
+            const row = values[r];
+            if (!row || filaVacia(row)) continue;
+            if (contarCoincidencias(row) >= 5) continue;            // salta encabezados repetidos
+            rows.push(row);
+        }
+        return { hayDatos: rows.length > 0, mapa, rows };
+    }
+
+    /* ============================================================
+       FECHAS
+       La hoja mezcla formatos (mes/día y día/mes, incluso en la misma
+       columna). Se detecta el orden por pestaña y, para los casos
+       ambiguos, se desambigua con el mes de la pestaña.
+       ============================================================ */
+    function detectarOrdenFecha(rows, mapa, mes) {
+        const col = mapa.FECHA;
+        if (col == null || col < 0) return 'MD';
+        const mesNum = MONTHS.indexOf(mes) + 1;
+        let diaPrimero = 0, mesPrimero = 0, primeroEsMes = 0, segundoEsMes = 0;
+
+        rows.forEach(r => {
+            const m = String(r[col] == null ? '' : r[col]).trim()
+                .match(/^(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})$/);
+            if (!m) return;
+            const a = +m[1], b = +m[2];
+            if (a > 12) diaPrimero++;
+            if (b > 12) mesPrimero++;
+            if (a === mesNum) primeroEsMes++;
+            if (b === mesNum) segundoEsMes++;
+        });
+
+        if (mesPrimero && !diaPrimero) return 'MD';
+        if (diaPrimero && !mesPrimero) return 'DM';
+        if (primeroEsMes > segundoEsMes) return 'MD';
+        if (segundoEsMes > primeroEsMes) return 'DM';
+        return 'MD';
+    }
+
+    function resolverFecha(valor, ordenTab, mesNum) {
+        const t = String(valor == null ? '' : valor).trim();
+        if (!t) return null;
+
+        let m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);            // ISO
+        if (m) return (+m[1]) * 10000 + (+m[2]) * 100 + (+m[3]);
+
+        m = t.match(/^(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})/);
+        if (m) {
+            const a = +m[1], b = +m[2];
+            let y = +m[3]; if (y < 100) y += 2000;
+            let mo, da;
+
+            if (a > 12) { mo = b; da = a; }                                // 26/05 -> día/mes
+            else if (b > 12) { mo = a; da = b; }                           // 4/16  -> mes/día
+            else if (mesNum && a === mesNum && b !== mesNum) { mo = a; da = b; }  // 5/8 en pestaña Mayo
+            else if (mesNum && b === mesNum && a !== mesNum) { mo = b; da = a; }  // 01/06 en pestaña Junio
+            else if (ordenTab === 'DM') { mo = b; da = a; }
+            else { mo = a; da = b; }
+
+            if (mo < 1 || mo > 12 || da < 1 || da > 31) return null;
+            return y * 10000 + mo * 100 + da;
+        }
+
+        const d = new Date(t);
+        if (isNaN(d)) return null;
+        return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+    }
+
+    function isoToNum(v) {
+        const m = String(v || '').match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        return m ? (+m[1]) * 10000 + (+m[2]) * 100 + (+m[3]) : null;
+    }
+
+    const isoDate = (d) =>
+        d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+
+    function fmtNum(n) {
+        if (n == null) return '';
+        return String(Math.floor(n / 100) % 100).padStart(2, '0') + '/' +
+               String(n % 100).padStart(2, '0') + '/' + Math.floor(n / 10000);
+    }
+
+    function nuevaFilaCanonica(row, mapa, mes, orden) {
+        const out = new Array(26).fill('');
+        CAMPOS.forEach(f => {
+            const c = mapa[f];
+            if (c != null && c >= 0 && c < row.length) out[SALIDA[f]] = row[c];
+        });
+        out[SALIDA.MES] = mes;
+        out[SALIDA.FECHA_NUM] = resolverFecha(
+            mapa.FECHA != null && mapa.FECHA >= 0 ? row[mapa.FECHA] : '',
+            orden,
+            MONTHS.indexOf(mes) + 1
+        );
+        return out;
+    }
+
+    /* ============================================================
+       CARGA: API de Sheets -> respaldo gviz (sin key)
+       ============================================================ */
+    async function fetchMesApi(mes) {
+        const rango = encodeURIComponent(mes + '!A1:AN');
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${rango}?key=${API_KEY}&valueRenderOption=FORMATTED_VALUE`;
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('API HTTP ' + r.status);
+        const j = await r.json();
+        if (!j.values || !j.values.length) throw new Error('API sin datos');
+        return j.values;
+    }
+
+    async function fetchMesGviz(mes) {
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(mes)}`;
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('gviz HTTP ' + r.status);
+        const texto = await r.text();
+        const json = JSON.parse(texto.substring(texto.indexOf('{'), texto.lastIndexOf('}') + 1));
+        return gvizToValues(json);
+    }
+
+    function gvizToValues(json) {
+        const cols = ((json.table && json.table.cols) || [])
+            .map(c => (c && c.label != null ? String(c.label) : ''));
+        const rows = [];
+        if (cols.some(l => l !== '')) rows.push(cols);           // reinyecta encabezados
+        ((json.table && json.table.rows) || []).forEach(r => {
+            const row = [];
+            (r.c || []).forEach(cell => {
+                if (!cell) { row.push(''); return; }
+                row.push(cell.f != null ? cell.f : (cell.v != null ? String(cell.v) : ''));
+            });
+            rows.push(row);
+        });
+        return rows;
+    }
+
+    async function fetchMes(mes) {
+        try {
+            const values = await fetchMesApi(mes);
+            ultimaFuente = ultimaFuente || 'API';
+            return values;
+        } catch (e1) {
+            const values = await fetchMesGviz(mes);
+            if (ultimaFuente !== 'respaldo') ultimaFuente = 'respaldo';
+            return values;
+        }
+    }
+
+    async function cargarTodo() {
+        if (cargando) return;
+        cargando = true;
+        $('loading').classList.remove('hidden');
+        $('refreshBtn').disabled = true;
+        $('errorBox').classList.add('hidden');
+        ultimaFuente = '';
+        ultimoError = '';
+
+        const tareas = MONTHS.map(async (mes) => {
+            try {
+                const values = await fetchMes(mes);
+                if (!values || !values.length) return [];
+                const parsed = analizarHoja(values);
+                if (!parsed.hayDatos) return [];
+                const orden = detectarOrdenFecha(parsed.rows, parsed.mapa, mes);
+                return parsed.rows.map(row => nuevaFilaCanonica(row, parsed.mapa, mes, orden));
+            } catch (e) {
+                if (!ultimoError) ultimoError = mes + ': ' + (e && e.message ? e.message : e);
+                return [];
+            }
+        });
+
+        const partes = await Promise.all(tareas);
+        allData = [].concat(...partes);
+
+        $('loading').classList.add('hidden');
+        $('refreshBtn').disabled = false;
+        cargando = false;
+
+        $('sourceLabel').textContent = ultimaFuente || '—';
+        $('updatedLabel').textContent = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        if (!allData.length) {
+            $('errorBox').classList.remove('hidden');
+            $('errorBox').innerHTML =
+                'No se pudieron leer los datos.<br>' +
+                '1) Comparte la hoja como <b>Cualquiera con el enlace → Lector</b>.<br>' +
+                '2) Verifica que la API key sea válida y tenga habilitada la API de Google Sheets.<br>' +
+                (ultimoError ? '3) Detalle: ' + esc(ultimoError) : '');
+            return;
+        }
+
+        poblarFiltros();
+    }
+
+    /* ============================================================
+       FILTROS
+       ============================================================ */
+    function fechaMaxNum() {
+        let mx = 0;
+        allData.forEach(r => { const t = r[SALIDA.FECHA_NUM]; if (t != null && t > mx) mx = t; });
+        return mx;
+    }
+
+    function poblarSelect(sel, prev, vacio, mapa) {
+        const keys = Object.keys(mapa).sort();
+        sel.innerHTML = '<option value="">' + vacio + '</option>' +
+            keys.map(k => `<option value="${esc(k)}">${esc(k)} (${mapa[k]})</option>`).join('');
+        sel.value = (prev && Object.prototype.hasOwnProperty.call(mapa, prev)) ? prev : '';
+    }
+
+    function poblarFiltros() {
+        const cuenta = (idx) => {
+            const m = Object.create(null);
+            allData.forEach(r => { const s = r[idx] || ''; if (s) m[s] = (m[s] || 0) + 1; });
+            return m;
+        };
+
+        // Mes (pestaña)
+        const mesSel = $('monthSelector');
+        const prevMes = mesSel.value;
+        const cMes = cuenta(SALIDA.MES);
+
+        mesSel.innerHTML = '<option value="">Todas las pestañas</option>' +
+            MONTHS.map(m => `<option value="${m}">${m}${cMes[m] ? ' (' + cMes[m] + ')' : ''}</option>`).join('');
+
+        if (primeraCarga) {
+            const mx = fechaMaxNum();
+            let mesInicial = '';
+            if (mx) {
+                const fila = allData.find(r => r[SALIDA.FECHA_NUM] === mx);
+                if (fila) mesInicial = fila[SALIDA.MES];
+            }
+            mesSel.value = mesInicial;
+        } else {
+            mesSel.value = (prevMes && (prevMes === '' || MONTHS.indexOf(prevMes) >= 0)) ? prevMes : '';
+        }
+
+        // Año
+        const cYear = Object.create(null);
+        allData.forEach(r => {
+            const t = r[SALIDA.FECHA_NUM];
+            if (t != null) { const y = Math.floor(t / 10000); cYear[y] = (cYear[y] || 0) + 1; }
+        });
+        poblarSelect($('yearSelector'), $('yearSelector').value, 'Todos los años', cYear);
+
+        // Estado y Tipo
+        poblarSelect($('estadoSelector'), $('estadoSelector').value, 'Todos los estados', cuenta(SALIDA.ESTADO));
+        poblarSelect($('tipoSelector'),   $('tipoSelector').value,   'Todos los tipos',   cuenta(SALIDA.TIPO));
+
+        primeraCarga = false;
+        render();
+    }
+
+    const esPrioridadAlta = (v) => {
+        const s = String(v || '');
+        return s.indexOf('✅') >= 0 || s.indexOf('✔') >= 0 || /^true$/i.test(s) || /alta/i.test(s);
+    };
+
+    const rowTexto = (r) => CAMPOS.map(f => r[COL[f]] || '').join(' ').toLowerCase();
+
+    function filtrar() {
+        const desde = isoToNum($('fechaDesde').value);
+        const hasta = isoToNum($('fechaHasta').value);
+        const conRango = !!(desde || hasta);
+        const year  = $('yearSelector').value;
+        const mes   = $('monthSelector').value;
+        const estado = $('estadoSelector').value;
+        const tipo   = $('tipoSelector').value;
+        const prio   = $('prioridadSelector').value;
+        const q = $('searchInput').value.toLowerCase().trim();
+
+        return allData.filter(r => {
+            const t = r[SALIDA.FECHA_NUM];
+
+            if (conRango) {
+                if (t == null) return false;
+                if (desde && t < desde) return false;
+                if (hasta && t > hasta) return false;
+            } else {
+                if (year && String(Math.floor((t || 0) / 10000)) !== year) return false;
+                if (mes && (r[COL.MES] || '') !== mes) return false;
+            }
+
+            if (estado && (r[COL.ESTADO] || '') !== estado) return false;
+            if (tipo && (r[COL.TIPO] || '') !== tipo) return false;
+            if (prio === 'alta' && !esPrioridadAlta(r[COL.PRIORIDAD])) return false;
+            if (prio === 'normal' && esPrioridadAlta(r[COL.PRIORIDAD])) return false;
+            if (q && !rowTexto(r).includes(q)) return false;
+            return true;
+        }).sort((a, b) => (b[SALIDA.FECHA_NUM] || 0) - (a[SALIDA.FECHA_NUM] || 0));
+    }
+
+    function render() {
+        const datos = filtrar();
+        updateStats(datos);
+        updateCharts(datos);
+        updateTable(datos);
+
+        const conRango = !!($('fechaDesde').value || $('fechaHasta').value);
+        let txt = 'Mostrando ' + datos.length + ' de ' + allData.length + ' órdenes';
+        if (conRango) txt += ' · rango de fechas activo (se ignora Año/Mes)';
+        $('filterInfo').textContent = txt;
+        $('emptyMsg').classList.toggle('hidden', datos.length > 0);
+    }
+
+    /* ============================================================
+       KPIs / GRÁFICAS / TABLA
+       ============================================================ */
+    function updateStats(data) {
+        animateNumber('totalOrders', data.length);
+        animateNumber('completedOrders', data.filter(r => r[COL.ESTADO] && r[COL.ESTADO].includes('Sent')).length);
+        animateNumber('inProgressOrders', data.filter(r => r[COL.ESTADO] && !r[COL.ESTADO].includes('Sent')).length);
+        animateNumber('highPriority', data.filter(r => esPrioridadAlta(r[COL.PRIORIDAD])).length);
+    }
+
+    function animateNumber(id, destino) {
+        const el = $(id);
+        const actual = parseInt(el.textContent, 10) || 0;
+        if (actual === destino) { el.textContent = destino; return; }
+        const paso = (destino - actual) / 20;
+        let i = 0;
+        const t = setInterval(() => {
+            i++;
+            el.textContent = Math.round(actual + paso * i);
+            if (i >= 20) { clearInterval(t); el.textContent = destino; }
+        }, 30);
+    }
+
+    function updateCharts(data) {
+        if (typeof Chart === 'undefined') return;
+
+        const estados = Object.create(null), tipos = Object.create(null);
+        data.forEach(r => {
+            const s = r[COL.ESTADO] || 'Sin estado';
+            const t = r[COL.TIPO] || 'Sin tipo';
+            estados[s] = (estados[s] || 0) + 1;
+            tipos[t] = (tipos[t] || 0) + 1;
+        });
+
+        if (statusChart) statusChart.destroy();
+        if (typeChart) typeChart.destroy();
+
+        statusChart = new Chart($('statusChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(estados),
+                datasets: [{
+                    data: Object.values(estados),
+                    backgroundColor: ['#00f7ff','#b026ff','#ff3366','#ffa500','#00ff88','#ff00ff','#4169e1','#7b68ee'],
+                    borderColor: '#0a0e27', borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true,
+                plugins: {
+                    title: { display: true, text: 'Órdenes por Estado', color: '#00f7ff', font: { size: 14, family: 'Courier New' } },
+                    legend: { position: 'bottom', labels: { color: '#e0e0e0', font: { size: 10 } } }
+                },
+                animation: { duration: 800 }
+            }
+        });
+
+        typeChart = new Chart($('typeChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(tipos),
+                datasets: [{
+                    label: 'Cantidad',
+                    data: Object.values(tipos),
+                    backgroundColor: 'rgba(0,247,255,0.6)',
+                    borderColor: '#00f7ff', borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true,
+                plugins: {
+                    title: { display: true, text: 'Órdenes por Tipo', color: '#00f7ff', font: { size: 14, family: 'Courier New' } },
+                    legend: { display: false }
+                },
+                animation: { duration: 800 },
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: '#e0e0e0', font: { size: 10 } }, grid: { color: 'rgba(0,247,255,0.1)' } },
+                    x: { ticks: { color: '#e0e0e0', font: { size: 9 } }, grid: { color: 'rgba(0,247,255,0.1)' } }
+                }
+            }
+        });
+    }
+
+    function updateTable(data) {
+        const thead = document.querySelector('#ordersTable thead tr');
+        const tabs = new Set(data.map(r => r[COL.MES]).filter(Boolean));
+        const mostrarMes = tabs.size > 1;
+        const thMes = thead.querySelector('th.col-mes');
+
+        if (mostrarMes && !thMes) {
+            const th = document.createElement('th');
+            th.textContent = 'Pestaña';
+            th.className = 'col-mes';
+            thead.appendChild(th);
+        } else if (!mostrarMes && thMes) {
+            thMes.remove();
+        }
+
+        const tbody = $('ordersBody');
+        tbody.innerHTML = '';
+
+        const frag = document.createDocumentFragment();
+
+        data.forEach(row => {
+            const estado = row[COL.ESTADO] || '';
+            const statusClass = estado.includes('Sent') ? 'status-sent'
+                              : estado.includes('Approved') ? 'status-approved'
+                              : 'status-ready';
+            const prioridad = row[COL.PRIORIDAD] || '';
+            const priorityClass = esPrioridadAlta(prioridad) ? 'priority-high' : 'priority-normal';
+            const fechaMostrada = row[SALIDA.FECHA_NUM] != null ? fmtNum(row[SALIDA.FECHA_NUM]) : (row[COL.FECHA] || '');
+
+            const tr = document.createElement('tr');
+            tr.innerHTML =
+                `<td>${esc(row[COL.ID])}</td>` +
+                `<td>${esc(fechaMostrada)}</td>` +
+                `<td><span class="status-badge ${statusClass}">${esc(estado)}</span></td>` +
+                `<td class="${priorityClass}">${esc(prioridad)}</td>` +
+                `<td>${esc(row[COL.TIPO])}</td>` +
+                `<td>${esc(row[COL.ORDEN])}</td>` +
+                `<td>${esc(row[COL.SETS]) || '0'}</td>` +
+                `<td>${esc(row[COL.PIEZAS]) || '0'}</td>` +
+                `<td>${esc(row[COL.AP])}</td>` +
+                `<td class="wrap">${esc(row[COL.QC])}</td>` +
+                (mostrarMes ? `<td style="color:#00f7ff">${esc(row[COL.MES])}</td>` : '');
+            frag.appendChild(tr);
+        });
+
+        tbody.appendChild(frag);
+    }
+
+    /* ============================================================
+       EVENTOS
+       ============================================================ */
+    ['yearSelector','monthSelector','estadoSelector','tipoSelector','prioridadSelector']
+        .forEach(id => $(id).addEventListener('change', render));
+    $('fechaDesde').addEventListener('change', render);
+    $('fechaHasta').addEventListener('change', render);
+
+    let searchTimer = null;
+    $('searchInput').addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(render, 250);
+    });
+
+    $('refreshBtn').addEventListener('click', cargarTodo);
+
+    function rango(a, b) {
+        $('fechaDesde').value = isoDate(a);
+        $('fechaHasta').value = isoDate(b);
+        render();
+    }
+    function partesFecha(n) {
+        return {
+            y: Math.floor(n / 10000),
+            m: Math.floor(n / 100) % 100 - 1,
+            d: n % 100
+        };
+    }
+
+    $('qDia').addEventListener('click', () => {
+        const n = fechaMaxNum(); if (!n) return;
+        const p = partesFecha(n);
+        rango(new Date(p.y, p.m, p.d), new Date(p.y, p.m, p.d));
+    });
+    $('q7').addEventListener('click', () => {
+        const n = fechaMaxNum(); if (!n) return;
+        const p = partesFecha(n);
+        rango(new Date(p.y, p.m, p.d - 6), new Date(p.y, p.m, p.d));
+    });
+    $('q30').addEventListener('click', () => {
+        const n = fechaMaxNum(); if (!n) return;
+        const p = partesFecha(n);
+        rango(new Date(p.y, p.m, p.d - 29), new Date(p.y, p.m, p.d));
+    });
+    $('qMes').addEventListener('click', () => {
+        const n = fechaMaxNum(); if (!n) return;
+        const p = partesFecha(n);
+        rango(new Date(p.y, p.m, 1), new Date(p.y, p.m + 1, 0));
+    });
+    $('clearAll').addEventListener('click', () => {
+        ['yearSelector','monthSelector','estadoSelector','tipoSelector','prioridadSelector']
+            .forEach(id => $(id).value = '');
+        $('fechaDesde').value = '';
+        $('fechaHasta').value = '';
+        $('searchInput').value = '';
+        render();
+    });
+
+    /* ============================================================
+       INICIO
+       ============================================================ */
+    cargarTodo();
+    setInterval(cargarTodo, REFRESCO_MS);
+    </script>
+</body>
+</html>
