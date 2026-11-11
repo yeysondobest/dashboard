@@ -24,6 +24,8 @@
         }
         *{margin:0;padding:0;box-sizing:border-box}
         html{scroll-behavior:smooth}
+        /* que el título de la sección no quede debajo de la barra sticky */
+        section[id]{scroll-margin-top:128px}
         body{
             font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
             color:var(--ink);
@@ -246,6 +248,37 @@
         .donut-legend i{width:8px;height:8px;border-radius:3px;flex:none}
         .donut-legend span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .donut-legend b{margin-left:auto;color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600}
+        /* ── Evolución ────────────────────────────────────────── */
+        .chart-card.evo{grid-column:1/-1}
+        .chart-body.evo{height:280px}
+        .evo-resumen{display:flex;flex-wrap:wrap;gap:8px 22px;list-style:none;margin-top:12px}
+        .evo-resumen li{font-size:11px;color:var(--muted)}
+        .evo-resumen b{margin-left:5px;color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+        /* ── Diagnóstico / plan de mejora ─────────────────────── */
+        .diag-salud{display:inline-flex;align-items:center;gap:9px;padding:8px 14px;border-radius:999px;border:1px solid rgba(16,57,92,.1);background:rgba(255,255,255,.7);white-space:nowrap}
+        .diag-salud b{font-size:17px;font-weight:700;letter-spacing:-.02em}
+        .diag-salud span{font-size:10.5px;color:var(--muted)}
+        .diag-salud.ok b{color:#047857}
+        .diag-salud.warn b{color:#b45309}
+        .diag-salud.bad b{color:#be123c}
+        .diag-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:10px;margin-bottom:16px}
+        .diag-item{display:flex;gap:11px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.6);border:1px solid rgba(16,57,92,.08)}
+        .diag-item .ico{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none;background:rgba(255,255,255,.9);color:#0284c7;border:1px solid rgba(255,255,255,.9)}
+        .diag-item .ico svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+        .diag-item.alta .ico{color:#be123c;background:rgba(244,63,94,.14)}
+        .diag-item.media .ico{color:#b45309;background:rgba(245,158,11,.16)}
+        .diag-item.baja .ico{color:#0284c7;background:rgba(56,189,248,.16)}
+        .diag-cifra{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+        .diag-cifra b{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+        .diag-cifra span{font-size:11.5px;font-weight:600;color:var(--ink-2)}
+        .diag-item p{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+        .diag-plan h3{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-bottom:8px}
+        .diag-plan ol{list-style:none;counter-reset:paso;display:grid;gap:8px}
+        .diag-plan li{position:relative;padding:10px 14px 10px 44px;border-radius:12px;background:rgba(255,255,255,.52);border:1px solid rgba(16,57,92,.07);font-size:12px;color:var(--ink-2)}
+        .diag-plan li::before{counter-increment:paso;content:counter(paso);position:absolute;left:12px;top:10px;width:21px;height:21px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#1d3f63,#0b2136);color:#fff;font-size:10.5px;font-weight:700}
+        .diag-plan li b{color:var(--ink);font-weight:600}
+        .diag-plan li .accion{display:block;color:var(--muted);font-size:10.5px;margin-top:2px}
+        .diag-vacio{padding:12px 14px;border-radius:12px;font-size:12px;color:#047857;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25)}
         /* ── Tabla ────────────────────────────────────────────── */
         .table-section{padding:18px 20px 10px}
         .table-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
@@ -337,6 +370,7 @@
         }
         @media (max-width:640px){
             .shell{padding:12px}
+            section[id]{scroll-margin-top:150px}
             .stats{grid-template-columns:minmax(0,1fr)}
             .quick{grid-column:1/-1}
             .topbar{padding:10px 12px}
@@ -376,6 +410,10 @@
                 <a class="nav-item" href="#graficas">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V11M9.5 20V5M15 20v-6.5M20.5 20V8"/></svg>
                     Gráficas
+                </a>
+                <a class="nav-item" href="#diagnostico">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"/></svg>
+                    Diagnóstico
                 </a>
                 <a class="nav-item" href="#ordenes">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
@@ -539,6 +577,31 @@
                         <canvas id="typeChart"></canvas>
                     </div>
                 </div>
+                <div class="panel glass chart-card evo animate-slide-up d3">
+                    <div class="panel-head">
+                        <div>
+                            <h2>Evolución de órdenes</h2>
+                            <p id="evoSub">Volumen y estado a lo largo del tiempo.</p>
+                        </div>
+                    </div>
+                    <div class="chart-body evo"><canvas id="evoChart"></canvas></div>
+                    <ul id="evoResumen" class="evo-resumen"></ul>
+                </div>
+            </section>
+
+            <section class="panel glass diagnostico animate-slide-up d3" id="diagnostico">
+                <div class="panel-head">
+                    <div>
+                        <h2>Diagnóstico y plan de mejora</h2>
+                        <p>Qué corregir primero, según las órdenes filtradas.</p>
+                    </div>
+                    <div class="diag-salud" id="diagSalud"><b>—</b><span>salud de la selección</span></div>
+                </div>
+                <div class="diag-grid" id="diagHallazgos"></div>
+                <div class="diag-plan">
+                    <h3>Plan sugerido</h3>
+                    <ol id="diagPlan"></ol>
+                </div>
             </section>
 
             <section class="panel glass table-section animate-slide-up d3" id="ordenes">
@@ -579,10 +642,10 @@
     const REFRESCO_MS = 60000;
 
     const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    const CAMPOS = ['ID','FECHA','ESTADO','PRIORIDAD','TIPO','ORDEN','RUTA','SETS','PIEZAS','AP','QC'];
+    const CAMPOS = ['ID','FECHA','ESTADO','PRIORIDAD','TIPO','ORDEN','RUTA','SETS','PIEZAS','AP','QC','COMENTARIO'];
 
     /* índices del arreglo canónico que consume la interfaz */
-    const SALIDA = { ID:0, FECHA:1, ESTADO:2, PRIORIDAD:3, TIPO:5, ORDEN:7, RUTA:26, SETS:9, PIEZAS:10, AP:14, QC:16, MES:24, FECHA_NUM:25 };
+    const SALIDA = { ID:0, FECHA:1, ESTADO:2, PRIORIDAD:3, TIPO:5, ORDEN:7, RUTA:26, SETS:9, PIEZAS:10, AP:14, QC:16, COMENTARIO:19, MES:24, FECHA_NUM:25 };
     const COL = SALIDA;
 
     const SINONIMOS = {
@@ -593,6 +656,7 @@
         TIPO:      ['tipo','type','producto','product'],
         ORDEN:     ['orden','order','sales order'],
         RUTA:      ['ruta','path','carpeta','folder','ubicacion','ubicación','location','directorio'],
+        COMENTARIO:['comentario','comentarios','comment','comments','nota','note','observacion','observación','observaciones'],
         SETS:      ['sets','set','juegos','juego'],
         PIEZAS:    ['piezas','piez','pieces','piece','pcs','qty','cant','quantity','unidades','units'],
         AP:        ['ap','artista','artist','arte'],
@@ -657,7 +721,7 @@
     }
 
     function mapaFijo() {
-        return { ID:0, FECHA:1, ESTADO:2, PRIORIDAD:3, TIPO:5, ORDEN:7, RUTA:12, SETS:9, PIEZAS:10, AP:20, QC:17 };
+        return { ID:0, FECHA:1, ESTADO:2, PRIORIDAD:3, TIPO:5, ORDEN:7, RUTA:12, SETS:9, PIEZAS:10, AP:20, QC:17, COMENTARIO:19 };
     }
 
     function filaVacia(row) {
@@ -684,6 +748,7 @@
         if (mapa.RUTA == null || mapa.RUTA < 0) mapa.RUTA = 12;      // columna M: ruta/carpeta de la orden
         mapa.QC = 17;   // columna R: nombre de quién revisó la orden (QC)
         mapa.AP = 20;   // columna U: nombre del prime center
+        mapa.COMENTARIO = 19;   // columna T: comentarios/errores de QC
 
 
         const rows = [];
@@ -983,6 +1048,8 @@
         const datos = filtrar();
         updateStats(datos);
         updateCharts(datos);
+        updateEvolucion(datos);
+        updateDiagnostico(datos);
         updateTable(datos);
 
         const conRango = !!($('fechaDesde').value || $('fechaHasta').value);
@@ -1279,11 +1346,242 @@
         render();
     });
 
+
     /* ============================================================
-       INICIO
+       EVOLUCIÓN (gráfica explicativa) + DIAGNÓSTICO / PLAN DE MEJORA
        ============================================================ */
-    cargarTodo();
-    setInterval(cargarTodo, REFRESCO_MS);
+    let evoChart = null;
+
+    function numADate(n) {
+        return new Date(Math.floor(n / 10000), (Math.floor(n / 100) % 100) - 1, n % 100);
+    }
+    function dateANum(d) {
+        return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+    }
+    function diasEntre(a, b) {
+        return Math.round((numADate(a) - numADate(b)) / 86400000);
+    }
+    function lunesDe(d) {
+        const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const dow = (x.getDay() + 6) % 7;                 // 0 = lunes
+        x.setDate(x.getDate() - dow);
+        return x;
+    }
+
+    function updateEvolucion(data) {
+        if (typeof Chart === 'undefined') return;
+
+        const cont = $('evoChart');
+        if (!cont) return;
+
+        if (evoChart) { evoChart.destroy(); evoChart = null; }
+
+        const fechas = data.map(r => r[SALIDA.FECHA_NUM]).filter(n => n != null);
+        const resumen = $('evoResumen');
+        const sub = $('evoSub');
+
+        if (!fechas.length) {
+            if (sub) sub.textContent = 'Sin fechas en la selección: no se puede dibujar la evolución.';
+            if (resumen) resumen.innerHTML = '<li>Corrige la columna de fecha para ver la evolución.</li>';
+            return;
+        }
+
+        const min = Math.min.apply(null, fechas);
+        const max = Math.max.apply(null, fechas);
+        const span = diasEntre(max, min);
+        const modo = span <= 21 ? 'dia' : (span <= 180 ? 'semana' : 'mes');
+
+        const claves = [];
+        const etiquetas = [];
+        const NOMBRES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+        if (modo === 'dia') {
+            for (let d = numADate(min); dateANum(d) <= max; d.setDate(d.getDate() + 1)) {
+                const n = dateANum(d);
+                claves.push(n);
+                etiquetas.push(String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0'));
+            }
+        } else if (modo === 'semana') {
+            for (let d = lunesDe(numADate(min)); dateANum(d) <= max; d.setDate(d.getDate() + 7)) {
+                claves.push(dateANum(d));
+                etiquetas.push(String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0'));
+            }
+        } else {
+            let d = new Date(Math.floor(min / 10000), (Math.floor(min / 100) % 100) - 1, 1);
+            for (; dateANum(d) <= max; d.setMonth(d.getMonth() + 1)) {
+                claves.push(d.getFullYear() * 100 + (d.getMonth() + 1));
+                etiquetas.push(NOMBRES[d.getMonth()] + ' ' + String(d.getFullYear()).slice(2));
+            }
+        }
+
+        const idx = Object.create(null);
+        claves.forEach((k, i) => { idx[k] = i; });
+        const enviadas = new Array(claves.length).fill(0);
+        const pendientes = new Array(claves.length).fill(0);
+
+        data.forEach(r => {
+            const t = r[SALIDA.FECHA_NUM];
+            if (t == null) return;
+            let k;
+            if (modo === 'dia') k = t;
+            else if (modo === 'semana') k = dateANum(lunesDe(numADate(t)));
+            else k = Math.floor(t / 100) * 1;
+            const i = idx[k];
+            if (i == null) return;
+            if ((r[COL.ESTADO] || '').includes('Sent')) enviadas[i]++; else pendientes[i]++;
+        });
+
+        const FUENTE = "'Inter','Segoe UI',system-ui,sans-serif";
+        const totales = claves.map((k, i) => enviadas[i] + pendientes[i]);
+        let pico = 0;
+        totales.forEach((v, i) => { if (v > totales[pico]) pico = i; });
+        const suma = totales.reduce((a, b) => a + b, 0) || 1;
+
+        if (sub) {
+            const nombre = modo === 'dia' ? 'Por día' : (modo === 'semana' ? 'Por semana' : 'Por mes');
+            sub.textContent = nombre + ' · ' + claves.length + ' periodos · del ' + fmtNum(min) + ' al ' + fmtNum(max);
+        }
+        if (resumen) {
+            resumen.innerHTML =
+                '<li>Pico<b>' + totales[pico] + ' · ' + etiquetas[pico] + '</b></li>' +
+                '<li>Promedio<b>' + (Math.round(suma / claves.length * 10) / 10) + ' por periodo</b></li>' +
+                '<li>Pendientes<b>' + pendientes.reduce((a, b) => a + b, 0) + ' de ' + suma + '</b></li>';
+        }
+
+        evoChart = new Chart(cont.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: etiquetas,
+                datasets: [
+                    { label: 'Enviadas', data: enviadas, backgroundColor: 'rgba(16,185,129,.85)', borderRadius: 5, borderSkipped: false, maxBarThickness: 44 },
+                    { label: 'Pendientes', data: pendientes, backgroundColor: 'rgba(56,189,248,.85)', borderRadius: 5, borderSkipped: false, maxBarThickness: 44 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, padding: 14, color: '#47627a', font: { size: 11, family: FUENTE } } },
+                    tooltip: {
+                        backgroundColor: 'rgba(11,33,54,0.94)', padding: 10, cornerRadius: 10,
+                        titleFont: { family: FUENTE, size: 11 }, bodyFont: { family: FUENTE, size: 11 }
+                    }
+                },
+                animation: { duration: 700 },
+                scales: {
+                    x: { stacked: true, grid: { display: false }, ticks: { color: '#7d93a6', font: { size: 10, family: FUENTE } }, border: { display: false } },
+                    y: { stacked: true, beginAtZero: true, ticks: { precision: 0, color: '#7d93a6', font: { size: 10, family: FUENTE } }, grid: { color: 'rgba(13,33,55,.07)' }, border: { display: false } }
+                }
+            }
+        });
+    }
+
+    const ICONO = {
+        ruta:  '<path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4l2 2h9A1.5 1.5 0 0 1 21 9.5v9A1.5 1.5 0 0 1 19.5 20h-15A1.5 1.5 0 0 1 3 18.5Z"/>',
+        ap:    '<circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.4 3.4-5.2 7-5.2s6.2 1.8 7 5.2"/>',
+        qc:    '<circle cx="12" cy="12" r="9"/><path d="m8.4 12.4 2.4 2.4 4.8-5.2"/>',
+        clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7.2V12l3.2 2"/>',
+        alerta:'<path d="M10.3 4.4 2.7 17.6A1.9 1.9 0 0 0 4.3 20.5h15.4a1.9 1.9 0 0 0 1.6-2.9L13.7 4.4a1.9 1.9 0 0 0-3.4 0Z"/><path d="M12 9.2v4"/><path d="M12 16.4h.01"/>',
+        fecha: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.4"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+        chat:  '<path d="M21 12a8 8 0 0 1-8 8H7l-4 3V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8Z"/>'
+    };
+
+    const CATEGORIAS_QC = [
+        { nombre: 'Costura', re: /costur|stitch|hilo|seam|deshilach/i, accion: 'Checklist de costura en QC antes de aprobar.' },
+        { nombre: 'Color', re: /colou?r|tono|matiz|shade|pantone/i, accion: 'Validar color contra Pantone antes de aprobar el arte.' },
+        { nombre: 'Logo / estampado', re: /logo|estamp|print|imprimi|dtg|dise[nñ]o|design/i, accion: 'Confirmar tamaño y posición del logo con el cliente.' },
+        { nombre: 'Talla / medidas', re: /talla|size|medida|fit/i, accion: 'Verificar la tabla de tallas del roster.' },
+        { nombre: 'Falta información', re: /falta|missing|confirm|please add|no se|incomplet/i, accion: 'Completar el brief antes de mandar a producción.' },
+        { nombre: 'Manchas / calidad', re: /mancha|stain|suci|calidad|quality|roto|hueco/i, accion: 'Reforzar la revisión final y el empaque.' }
+    ];
+
+    function updateDiagnostico(data) {
+        const caja = $('diagHallazgos');
+        const plan = $('diagPlan');
+        const salud = $('diagSalud');
+        if (!caja || !plan) return;
+
+        const total = data.length;
+        const vacio = v => !String(v == null ? '' : v).trim();
+
+        const hoyNum = dateANum(new Date());
+        const sinRuta = data.filter(r => vacio(r[SALIDA.RUTA])).length;
+        const sinAP = data.filter(r => vacio(r[SALIDA.AP])).length;
+        const sinQC = data.filter(r => vacio(r[SALIDA.QC])).length;
+        const sinFecha = data.filter(r => r[SALIDA.FECHA_NUM] == null).length;
+        const abiertas = r => !(r[COL.ESTADO] || '').includes('Sent');
+        const urgentes = data.filter(r => esPrioridadAlta(r[COL.PRIORIDAD]) && abiertas(r)).length;
+        const atrasadas = data.filter(r => r[SALIDA.FECHA_NUM] != null && abiertas(r) && diasEntre(hoyNum, r[SALIDA.FECHA_NUM]) > 7).length;
+        const conComentario = data.filter(r => !vacio(r[SALIDA.COMENTARIO])).length;
+
+        // Errores de QC por categoría
+        const cuenta = {};
+        data.forEach(r => {
+            const txt = String(r[SALIDA.COMENTARIO] || '');
+            if (!txt.trim()) return;
+            CATEGORIAS_QC.forEach(c => {
+                if (c.re.test(txt)) cuenta[c.nombre] = (cuenta[c.nombre] || 0) + 1;
+            });
+        });
+        const topCat = Object.keys(cuenta).sort((a, b) => cuenta[b] - cuenta[a])[0] || '';
+
+        const hallazgos = [];
+        if (urgentes)   hallazgos.push({ k: 'alerta', nivel: 'alta',  peso: 100, n: urgentes, titulo: 'Urgentes abiertas', texto: 'Prioridad alta que aún no se envían.', accion: 'Despachar primero: son las de prioridad alta sin enviar.' });
+        if (atrasadas)  hallazgos.push({ k: 'clock',  nivel: 'alta',  peso: 95,  n: atrasadas, titulo: 'Más de 7 días sin enviar', texto: 'Órdenes abiertas con fecha vieja.', accion: 'Revisar por qué están detenidas y actualizar su estado.' });
+        if (conComentario) hallazgos.push({ k: 'chat', nivel: 'media', peso: 85, n: conComentario, titulo: 'Con observaciones de QC', texto: topCat ? ('Error más repetido: ' + topCat + '.') : 'Hay comentarios de QC pendientes.', accion: 'Atender las observaciones antes de reenviar.' });
+        if (sinRuta)    hallazgos.push({ k: 'ruta',   nivel: 'media', peso: 70, n: sinRuta, titulo: 'Sin ruta de carpeta', texto: 'El equipo no encuentra los archivos.', accion: 'Completar la columna M (ruta) de esas órdenes.' });
+        if (sinAP)      hallazgos.push({ k: 'ap',     nivel: 'media', peso: 60, n: sinAP, titulo: 'Sin prime center', texto: 'No se sabe quién produce la orden.', accion: 'Asignar el prime center en la columna U.' });
+        if (sinQC)      hallazgos.push({ k: 'qc',     nivel: 'baja',  peso: 50, n: sinQC, titulo: 'Sin revisor de QC', texto: 'Nadie firmó la revisión.', accion: 'Registrar quién revisó en la columna R.' });
+        if (sinFecha)   hallazgos.push({ k: 'fecha',  nivel: 'baja',  peso: 40, n: sinFecha, titulo: 'Sin fecha de envío', texto: 'No entran en los filtros por fecha.', accion: 'Corregir la fecha en la hoja (columna de Send Date).' });
+
+        // Salud = órdenes sin problemas de datos ni atraso
+        const conProblema = data.filter(r =>
+            vacio(r[SALIDA.RUTA]) || vacio(r[SALIDA.AP]) || vacio(r[SALIDA.QC]) ||
+            r[SALIDA.FECHA_NUM] == null ||
+            (abiertas(r) && r[SALIDA.FECHA_NUM] != null && diasEntre(hoyNum, r[SALIDA.FECHA_NUM]) > 7)
+        ).length;
+        const pct = total ? Math.max(0, Math.round((total - conProblema) / total * 100)) : 100;
+
+        if (salud) {
+            salud.className = 'diag-salud ' + (pct >= 90 ? 'ok' : pct >= 70 ? 'warn' : 'bad');
+            salud.innerHTML = '<b>' + pct + '%</b><span>salud de la selección</span>';
+        }
+
+        if (!total) {
+            caja.innerHTML = '<div class="diag-vacio">No hay órdenes con estos filtros.</div>';
+            plan.innerHTML = '';
+            return;
+        }
+
+        if (!hallazgos.length) {
+            caja.innerHTML = '<div class="diag-vacio">Sin alertas: rutas, prime center, revisor y fechas están completos.</div>';
+            plan.innerHTML = '';
+            return;
+        }
+
+        caja.innerHTML = hallazgos.map(h =>
+            '<div class="diag-item ' + h.nivel + '">' +
+                '<span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true">' + (ICONO[h.k] || '') + '</svg></span>' +
+                '<div>' +
+                    '<div class="diag-cifra"><b>' + h.n + '</b><span>' + h.titulo + '</span></div>' +
+                    '<p>' + h.texto + '</p>' +
+                '</div>' +
+            '</div>'
+        ).join('');
+
+        const pasos = hallazgos.slice().sort((a, b) => b.peso - a.peso).slice(0, 4);
+        const detalles = pasos.map(h => {
+            if (h.k === 'chat' && topCat) {
+                const cat = CATEGORIAS_QC.filter(c => c.nombre === topCat)[0];
+                return { titulo: 'Refuerza ' + topCat.toLowerCase() + ' (' + cuenta[topCat] + ')', accion: cat ? cat.accion : h.accion };
+            }
+            return { titulo: h.accion, accion: h.texto };
+        });
+
+        plan.innerHTML = detalles.map(d =>
+            '<li><b>' + d.titulo + '</b><span class="accion">' + d.accion + '</span></li>'
+        ).join('');
+    }
+
     /* ============================================================
        EXTRAS DE INTERFAZ (badges, totales, saludo, atajos, ruta, nav)
        ============================================================ */
@@ -1392,13 +1690,24 @@
         .map(a => document.querySelector(a.getAttribute('href')))
         .filter(Boolean);
 
+    // El clic marca la sección al instante (no depende del evento de scroll)
+    enlacesNav.forEach(a => {
+        a.addEventListener('click', () => {
+            enlacesNav.forEach(x => x.classList.toggle('active', x === a));
+        });
+    });
+
     function actualizarNav() {
         if (!seccionesNav.length) return;
-        const linea = window.scrollY + 170;
+        const linea = window.scrollY + Math.min(140, Math.round(window.innerHeight * 0.25));
         let activa = seccionesNav[0];
         seccionesNav.forEach(s => {
             if (s.getBoundingClientRect().top + window.scrollY <= linea) activa = s;
         });
+        // Al llegar al final, la última sección siempre queda activa
+        if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4) {
+            activa = seccionesNav[seccionesNav.length - 1];
+        }
         enlacesNav.forEach(a => {
             a.classList.toggle('active', a.getAttribute('href') === '#' + activa.id);
         });
@@ -1408,6 +1717,11 @@
     actualizarNav();
 
 
+    /* ============================================================
+       INICIO
+       ============================================================ */
+    cargarTodo();
+    setInterval(cargarTodo, REFRESCO_MS);
     </script>
 </body>
 </html>
