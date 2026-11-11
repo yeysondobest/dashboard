@@ -279,6 +279,45 @@
         .diag-plan li b{color:var(--ink);font-weight:600}
         .diag-plan li .accion{display:block;color:var(--muted);font-size:10.5px;margin-top:2px}
         .diag-vacio{padding:12px 14px;border-radius:12px;font-size:12px;color:#047857;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25)}
+        /* ── Calidad y producción ─────────────────────────────── */
+        .mes-chips{display:flex;flex-wrap:wrap;gap:6px}
+        .mes-chip{border:1px solid rgba(16,57,92,.12);background:rgba(255,255,255,.6);color:var(--ink-2);font:inherit;font-size:11px;font-weight:600;padding:6px 12px;border-radius:999px;cursor:pointer;transition:background .15s,color .15s}
+        .mes-chip:hover{background:#fff}
+        .mes-chip.activo{background:linear-gradient(135deg,#1d3f63,#0b2136);color:#fff;border-color:transparent}
+        .cal-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin-bottom:16px}
+        .cal-kpi{display:flex;flex-direction:column;gap:1px;padding:10px 13px;border-radius:14px;background:rgba(255,255,255,.6);border:1px solid rgba(16,57,92,.08)}
+        .cal-kpi b{font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.15;font-variant-numeric:tabular-nums}
+        .cal-kpi span{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+        .cal-kpi small{font-size:10px;color:var(--muted)}
+        .cal-kpi.ok b{color:#047857}
+        .cal-kpi.warn b{color:#b45309}
+        .cal-kpi.bad b{color:#be123c}
+        .cal-grid{display:grid;grid-template-columns:minmax(230px,1fr) 1.2fr;gap:18px;margin-bottom:8px}
+        .cal-sub{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin:6px 0 8px}
+        .cal-donut-box{position:relative;height:200px}
+        .cal-donut-box canvas{width:100% !important;height:100% !important}
+        .err-fila{display:grid;grid-template-columns:minmax(90px,140px) 1fr auto;gap:8px;align-items:center;margin-bottom:7px;font-size:11px}
+        .err-nombre{color:var(--ink-2);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .err-barra{height:10px;border-radius:999px;background:rgba(16,57,92,.07);overflow:hidden}
+        .err-barra i{display:block;height:100%;border-radius:999px}
+        .err-dato{color:var(--muted);font-size:10px;white-space:nowrap;font-variant-numeric:tabular-nums}
+        .cal-tabla-wrap{overflow:auto;border-radius:14px;border:1px solid rgba(16,57,92,.08);background:rgba(255,255,255,.4);margin-bottom:6px}
+        .cal-tabla{width:100%;border-collapse:separate;border-spacing:0}
+        .cal-tabla th{position:sticky;top:0;z-index:1;background:rgba(255,255,255,.94);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:9px 12px;border-bottom:1px solid rgba(16,57,92,.1);text-align:left;white-space:nowrap}
+        .cal-tabla td{padding:9px 12px;font-size:11.5px;color:var(--ink-2);border-bottom:1px solid rgba(16,57,92,.06);white-space:nowrap}
+        .cal-tabla td.mes{font-weight:600;color:var(--ink)}
+        .cal-tabla tr.total td{font-weight:700;color:var(--ink);background:rgba(255,255,255,.55)}
+        .cal-tabla th.num{text-align:right}
+        .cal-errores{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;max-height:330px;overflow:auto;padding-right:4px}
+        .err-card{padding:10px 13px;border-radius:14px;background:rgba(255,255,255,.62);border:1px solid rgba(16,57,92,.08)}
+        .err-chip{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;color:var(--c);background:rgba(255,255,255,.75);border:1px solid rgba(16,57,92,.08)}
+        .err-card p{font-size:11.5px;color:var(--ink-2);margin:6px 0 4px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+        .err-meta{font-size:10px;color:var(--muted)}
+        @media (max-width:900px){ .cal-grid{grid-template-columns:1fr} }
+        @media (max-width:560px){
+            .err-fila{grid-template-columns:1fr auto;row-gap:4px}
+            .err-nombre{grid-column:1/-1}
+        }
         /* ── Tabla ────────────────────────────────────────────── */
         .table-section{padding:18px 20px 10px}
         .table-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
@@ -305,6 +344,7 @@
         }
         tbody tr:hover td{background:rgba(255,255,255,.62)}
         tbody tr:last-child td{border-bottom:0}
+        thead th.num{text-align:right}
         tbody td:first-child{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
         td.wrap{white-space:normal;min-width:170px;max-width:330px;line-height:1.45}
         .status-badge{
@@ -410,6 +450,10 @@
                 <a class="nav-item" href="#graficas">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V11M9.5 20V5M15 20v-6.5M20.5 20V8"/></svg>
                     Gráficas
+                </a>
+                <a class="nav-item" href="#calidad">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.4-3 8.4-7 10-4-1.6-7-5.6-7-10V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+                    Calidad
                 </a>
                 <a class="nav-item" href="#diagnostico">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"/></svg>
@@ -589,6 +633,44 @@
                 </div>
             </section>
 
+            <section class="panel glass calidad animate-slide-up d3" id="calidad">
+                <div class="panel-head">
+                    <div>
+                        <h2>Calidad y producción</h2>
+                        <p>Revisión de QC por mes. No depende de los filtros de arriba.</p>
+                    </div>
+                    <div class="mes-chips" id="mesChips"></div>
+                </div>
+                <div class="cal-kpis" id="calKpis"></div>
+                <div class="cal-grid">
+                    <div>
+                        <h3 class="cal-sub">En qué está fallando</h3>
+                        <div class="cal-donut-box">
+                            <canvas id="errorChart"></canvas>
+                            <div class="donut-center"><b id="errorTotal">0</b><span>con error</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="cal-sub">Tipo de error (órdenes · piezas)</h3>
+                        <div id="errorBars"></div>
+                    </div>
+                </div>
+                <h3 class="cal-sub">Resumen por mes</h3>
+                <div class="cal-tabla-wrap">
+                    <table class="cal-tabla">
+                        <thead>
+                            <tr>
+                                <th>Mes</th><th class="num">Órdenes</th><th class="num">Sets</th><th class="num">Piezas</th>
+                                <th class="num">Custom</th><th class="num">Errores</th><th class="num">Pzs error</th><th class="num">Calidad</th>
+                            </tr>
+                        </thead>
+                        <tbody id="calTabla"></tbody>
+                    </table>
+                </div>
+                <h3 class="cal-sub">Errores uno por uno</h3>
+                <div class="cal-errores" id="calErrores"></div>
+            </section>
+
             <section class="panel glass diagnostico animate-slide-up d3" id="diagnostico">
                 <div class="panel-head">
                     <div>
@@ -642,10 +724,10 @@
     const REFRESCO_MS = 60000;
 
     const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    const CAMPOS = ['ID','FECHA','ESTADO','PRIORIDAD','TIPO','ORDEN','RUTA','SETS','PIEZAS','AP','QC','COMENTARIO'];
+    const CAMPOS = ['ID','FECHA','ESTADO','PRIORIDAD','TIPO','ORDEN','RUTA','SETS','PIEZAS','AP','QC','COMENTARIO','CUSTOM'];
 
     /* índices del arreglo canónico que consume la interfaz */
-    const SALIDA = { ID:0, FECHA:1, ESTADO:2, PRIORIDAD:3, TIPO:5, ORDEN:7, RUTA:26, SETS:9, PIEZAS:10, AP:14, QC:16, COMENTARIO:19, MES:24, FECHA_NUM:25 };
+    const SALIDA = { ID:0, FECHA:1, ESTADO:2, PRIORIDAD:3, TIPO:5, ORDEN:7, SETS:9, PIEZAS:10, CUSTOM:11, AP:14, QC:16, COMENTARIO:19, MES:24, FECHA_NUM:25, RUTA:26 };
     const COL = SALIDA;
 
     const SINONIMOS = {
@@ -657,6 +739,7 @@
         ORDEN:     ['orden','order','sales order'],
         RUTA:      ['ruta','path','carpeta','folder','ubicacion','ubicación','location','directorio'],
         COMENTARIO:['comentario','comentarios','comment','comments','nota','note','observacion','observación','observaciones'],
+        CUSTOM:    ['custom'],
         SETS:      ['sets','set','juegos','juego'],
         PIEZAS:    ['piezas','piez','pieces','piece','pcs','qty','cant','quantity','unidades','units'],
         AP:        ['ap','artista','artist','arte'],
@@ -721,7 +804,7 @@
     }
 
     function mapaFijo() {
-        return { ID:0, FECHA:1, ESTADO:2, PRIORIDAD:3, TIPO:5, ORDEN:7, RUTA:12, SETS:9, PIEZAS:10, AP:20, QC:17, COMENTARIO:19 };
+        return { ID:0, FECHA:1, ESTADO:2, PRIORIDAD:3, TIPO:5, ORDEN:7, RUTA:12, SETS:9, PIEZAS:10, CUSTOM:11, AP:20, QC:17, COMENTARIO:19 };
     }
 
     function filaVacia(row) {
@@ -749,6 +832,7 @@
         mapa.QC = 17;   // columna R: nombre de quién revisó la orden (QC)
         mapa.AP = 20;   // columna U: nombre del prime center
         mapa.COMENTARIO = 19;   // columna T: comentarios/errores de QC
+        mapa.CUSTOM = 11;       // columna L: marca de orden custom
 
 
         const rows = [];
@@ -1049,6 +1133,7 @@
         updateStats(datos);
         updateCharts(datos);
         updateEvolucion(datos);
+        updateCalidad();
         updateDiagnostico(datos);
         updateTable(datos);
 
@@ -1486,13 +1571,30 @@
     };
 
     const CATEGORIAS_QC = [
-        { nombre: 'Costura', re: /costur|stitch|hilo|seam|deshilach/i, accion: 'Checklist de costura en QC antes de aprobar.' },
         { nombre: 'Color', re: /colou?r|tono|matiz|shade|pantone/i, accion: 'Validar color contra Pantone antes de aprobar el arte.' },
-        { nombre: 'Logo / estampado', re: /logo|estamp|print|imprimi|dtg|dise[nñ]o|design/i, accion: 'Confirmar tamaño y posición del logo con el cliente.' },
-        { nombre: 'Talla / medidas', re: /talla|size|medida|fit/i, accion: 'Verificar la tabla de tallas del roster.' },
-        { nombre: 'Falta información', re: /falta|missing|confirm|please add|no se|incomplet/i, accion: 'Completar el brief antes de mandar a producción.' },
-        { nombre: 'Manchas / calidad', re: /mancha|stain|suci|calidad|quality|roto|hueco/i, accion: 'Reforzar la revisión final y el empaque.' }
+        { nombre: 'Team name / alineación', re: /team ?name|equipo|align|centrad|centered|visualmente/i, accion: 'Centrar y alinear el team name según la guía.' },
+        { nombre: 'Números', re: /number|n[uú]mero|numero|\bnum\b|front #|back #|front player/i, accion: 'Confirmar la numeración de la orden antes de imprimir.' },
+        { nombre: 'SO / SKU / set', re: /\bso\b|sku|set letter|wrong set|incorrect set|check the order|order please/i, accion: 'Verificar SO, SKU y letra del set antes de aprobar.' },
+        { nombre: 'Etiquetas', re: /jock|label|tag|etiqueta/i, accion: 'Revisar jock tag y etiquetas contra la ficha de la orden.' },
+        { nombre: 'Talla / medidas', re: /talla|size|\bsz\b|medida|measurement|fit/i, accion: 'Verificar la tabla de tallas del roster.' },
+        { nombre: 'Guías / ubicación', re: /guideline|guide ?lines?|gu[ií]a|decor|placen|placem|sleeve|manga|too high|too low|moved|location|posici/i, accion: 'Revisar guías y ubicación de la decoración.' },
+        { nombre: 'Costura', re: /costur|stitch|hilo|seam|deshilach/i, accion: 'Checklist de costura en QC antes de aprobar.' },
+        { nombre: 'Calidad / manchas', re: /mancha|stain|suci|calidad|quality|roto|hueco|spot|cutting/i, accion: 'Reforzar la revisión final y el empaque.' },
+        { nombre: 'Roster / cantidades', re: /roster|quantit|cantidad|\baq\b|match/i, accion: 'Cuadrar roster, cantidades y AQ.' },
+        { nombre: 'Nombre / tipografía', re: /player ?name|nombre|sponsor|font|tipograf|capital|lowercase|uppercase|case sensitive|sensitive case|letters/i, accion: 'Revisar nombre y tipografía contra el arte aprobado.' },
+        { nombre: 'Arte / Proof', re: /proof|arte|artwork|cpa|dise[nñ]o|design|logo|estamp|print|imprimi/i, accion: 'Confirmar arte y proof con el cliente antes de aprobar.' },
+        { nombre: 'Archivos / expansión', re: /folder|carpeta|expand|raster|to press|master|final|empty/i, accion: 'Revisar carpetas, expansión y archivos de salida.' },
+        { nombre: 'Falta información', re: /falta|missing|confirm|please add|incomplet|no se/i, accion: 'Completar el brief antes de mandar a producción.' }
     ];
+
+    /** Comentarios que no son errores reales (emojis, "comment", vacíos) */
+    function esComentarioValido(t) {
+        const s = String(t == null ? '' : t).replace(/[\s\u200d\ufe0f]/g, '');
+        if (s.length < 4) return false;
+        if (/^(comment|comentario|ok|n\/a|na)$/i.test(s)) return false;
+        if (!/[\p{L}\p{N}]/u.test(s)) return false;
+        return true;
+    }
 
     function updateDiagnostico(data) {
         const caja = $('diagHallazgos');
@@ -1511,13 +1613,13 @@
         const abiertas = r => !(r[COL.ESTADO] || '').includes('Sent');
         const urgentes = data.filter(r => esPrioridadAlta(r[COL.PRIORIDAD]) && abiertas(r)).length;
         const atrasadas = data.filter(r => r[SALIDA.FECHA_NUM] != null && abiertas(r) && diasEntre(hoyNum, r[SALIDA.FECHA_NUM]) > 7).length;
-        const conComentario = data.filter(r => !vacio(r[SALIDA.COMENTARIO])).length;
+        const conComentario = data.filter(r => esComentarioValido(r[SALIDA.COMENTARIO])).length;
 
         // Errores de QC por categoría
         const cuenta = {};
         data.forEach(r => {
             const txt = String(r[SALIDA.COMENTARIO] || '');
-            if (!txt.trim()) return;
+            if (!esComentarioValido(txt)) return;
             CATEGORIAS_QC.forEach(c => {
                 if (c.re.test(txt)) cuenta[c.nombre] = (cuenta[c.nombre] || 0) + 1;
             });
@@ -1580,6 +1682,229 @@
         plan.innerHTML = detalles.map(d =>
             '<li><b>' + d.titulo + '</b><span class="accion">' + d.accion + '</span></li>'
         ).join('');
+    }
+
+    /* ============================================================
+       CALIDAD Y PRODUCCIÓN (por mes, independiente de los filtros)
+       ============================================================ */
+    let errorChart = null;
+    let mesesCalidad = null;
+    const META_CALIDAD = 97;        // % objetivo
+    const META_PIEZAS_MES = 2000;   // piezas objetivo por mes
+
+    const COLOR_CAT = {
+        'Color': '#8b5cf6',
+        'Números': '#38bdf8',
+        'Etiquetas': '#10b981',
+        'Talla / medidas': '#f59e0b',
+        'Arte / Proof': '#6366f1',
+        'Costura': '#f43f5e',
+        'Falta información': '#94a3b8',
+        'Calidad / manchas': '#0ea5e9',
+        'Otros': '#64748b'
+    };
+
+    function clasificarErrorTexto(txt) {
+        for (let i = 0; i < CATEGORIAS_QC.length; i++) {
+            if (CATEGORIAS_QC[i].re.test(txt)) return CATEGORIAS_QC[i].nombre;
+        }
+        return 'Otros';
+    }
+
+    function mesesConDatos() {
+        return MONTHS.filter(m => allData.some(r => r[SALIDA.MES] === m));
+    }
+
+    function renderChipsCalidad() {
+        const cont = $('mesChips');
+        if (!cont) return;
+
+        const meses = mesesConDatos();
+        if (!meses.length) { cont.innerHTML = ''; return; }
+
+        if (!mesesCalidad) {
+            const delFiltro = $('monthSelector').value;
+            let inicial = (delFiltro && meses.indexOf(delFiltro) >= 0) ? delFiltro : '';
+            if (!inicial) {
+                const mx = fechaMaxNum();
+                const fila = mx ? allData.filter(r => r[SALIDA.FECHA_NUM] === mx)[0] : null;
+                inicial = fila ? fila[SALIDA.MES] : meses[meses.length - 1];
+            }
+            mesesCalidad = new Set([inicial]);
+        }
+
+        mesesCalidad.forEach(m => { if (meses.indexOf(m) < 0) mesesCalidad.delete(m); });
+        if (!mesesCalidad.size) mesesCalidad.add(meses[meses.length - 1]);
+
+        cont.innerHTML = meses.map(m =>
+            '<button type="button" class="mes-chip' + (mesesCalidad.has(m) ? ' activo' : '') + '" data-mes="' + esc(m) + '">' + esc(m) + '</button>'
+        ).join('');
+    }
+
+    function metricasCalidad(filas, nMeses) {
+        const suma = idx => filas.reduce((t, r) => t + numeroDe(r[idx]), 0);
+        const piezas = suma(SALIDA.PIEZAS);
+        const sets = suma(SALIDA.SETS);
+        const custom = filas.filter(r => /custom/i.test(String(r[SALIDA.CUSTOM] || ''))).length;
+        const conError = filas.filter(r => esComentarioValido(r[SALIDA.COMENTARIO]));
+        const piezasError = conError.reduce((t, r) => t + numeroDe(r[SALIDA.PIEZAS]), 0);
+        const dias = new Set(filas.map(r => r[SALIDA.FECHA_NUM]).filter(n => n != null)).size;
+        const meta = META_PIEZAS_MES * Math.max(1, nMeses || 1);
+        return {
+            ordenes: filas.length, sets: sets, piezas: piezas, custom: custom,
+            errores: conError.length, piezasError: piezasError,
+            calidad: piezas ? (1 - piezasError / piezas) * 100 : 100,
+            dias: dias, meta: meta,
+            eficiencia: meta ? (piezas / meta) * 100 : 0,
+            conError: conError
+        };
+    }
+
+    function kpiCalidad(etiqueta, valor, nota, tono) {
+        return '<div class="cal-kpi' + (tono ? ' ' + tono : '') + '">' +
+            '<b>' + valor + '</b><span>' + etiqueta + '</span>' +
+            (nota ? '<small>' + nota + '</small>' : '') +
+        '</div>';
+    }
+
+    function updateCalidad() {
+        renderChipsCalidad();
+
+        const kpis = $('calKpis');
+        if (!kpis) return;
+
+        const filas = allData.filter(r => mesesCalidad.has(r[SALIDA.MES]));
+        const m = metricasCalidad(filas, mesesCalidad.size);
+
+        const pctFmt = v => (Math.round(v * 100) / 100).toFixed(2).replace('.', ',') + '%';
+        const deltaCal = Math.round((m.calidad - META_CALIDAD) * 100) / 100;
+        const tonoCal = m.calidad >= META_CALIDAD ? 'ok' : (m.calidad >= META_CALIDAD - 5 ? 'warn' : 'bad');
+
+        kpis.innerHTML =
+            kpiCalidad('Calidad', pctFmt(m.calidad),
+                'meta ' + META_CALIDAD + '% · ' + (deltaCal >= 0 ? '+' : '') + String(deltaCal).replace('.', ',') + ' pts', tonoCal) +
+            kpiCalidad('Órdenes', fmtCantidad(m.ordenes), m.dias + ' días con trabajo') +
+            kpiCalidad('Sets', fmtCantidad(m.sets), '') +
+            kpiCalidad('Piezas', fmtCantidad(m.piezas), 'meta ' + fmtCantidad(m.meta)) +
+            kpiCalidad('Custom', fmtCantidad(m.custom), 'órdenes custom') +
+            kpiCalidad('Eficiencia', pctFmt(m.eficiencia), 'vs ' + fmtCantidad(META_PIEZAS_MES) + '/mes') +
+            kpiCalidad('Errores', fmtCantidad(m.errores), 'órdenes observadas') +
+            kpiCalidad('Pzs con error', fmtCantidad(m.piezasError), 'de ' + fmtCantidad(m.piezas));
+
+        // Tipo de error (una categoría por orden)
+        const cuenta = Object.create(null);
+        const pzsCat = Object.create(null);
+        const ejemplos = Object.create(null);
+        m.conError.forEach(r => {
+            const texto = String(r[SALIDA.COMENTARIO] || '').replace(/\s+/g, ' ').trim();
+            const cat = clasificarErrorTexto(texto);
+            cuenta[cat] = (cuenta[cat] || 0) + 1;
+            pzsCat[cat] = (pzsCat[cat] || 0) + numeroDe(r[SALIDA.PIEZAS]);
+            if (!ejemplos[cat]) ejemplos[cat] = [];
+            if (ejemplos[cat].length < 3) ejemplos[cat].push(texto.slice(0, 70));
+        });
+
+        const cats = Object.keys(cuenta).sort((a, b) => cuenta[b] - cuenta[a]);
+        const maxC = Math.max.apply(null, cats.map(c => cuenta[c]).concat([1]));
+
+        const donut = $('errorChart');
+        if (donut && typeof Chart !== 'undefined') {
+            if (errorChart) errorChart.destroy();
+            errorChart = new Chart(donut.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: cats,
+                    datasets: [{
+                        data: cats.map(c => cuenta[c]),
+                        backgroundColor: cats.map(c => COLOR_CAT[c] || '#64748b'),
+                        borderColor: 'rgba(255,255,255,0.92)', borderWidth: 3, hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '72%',
+                    plugins: { legend: { display: false } },
+                    animation: { duration: 600 }
+                }
+            });
+        }
+        const totalErr = $('errorTotal');
+        if (totalErr) totalErr.textContent = m.errores;
+
+        const barras = $('errorBars');
+        if (barras) {
+            barras.innerHTML = cats.length
+                ? cats.map(c =>
+                    '<div class="err-fila" title="' + esc((ejemplos[c] || []).join(' | ')) + '">' +
+                        '<span class="err-nombre">' + esc(c) + '</span>' +
+                        '<span class="err-barra"><i style="width:' + Math.round(cuenta[c] / maxC * 100) + '%;background:' + (COLOR_CAT[c] || '#64748b') + '"></i></span>' +
+                        '<span class="err-dato">' + cuenta[c] + ' · ' + fmtCantidad(pzsCat[c]) + ' pzs</span>' +
+                    '</div>'
+                ).join('')
+                : '<div class="diag-vacio">Sin observaciones de QC en los meses seleccionados.</div>';
+        }
+
+        // Tabla por mes
+        const meses = MONTHS.filter(x => mesesCalidad.has(x));
+        const cuerpo = $('calTabla');
+        if (cuerpo) {
+            const filasTabla = meses.map(mes => {
+                const mt = metricasCalidad(allData.filter(r => r[SALIDA.MES] === mes), 1);
+                return { mes: mes, m: mt };
+            });
+            const ene = filasTabla.map(x => '<tr>' +
+                '<td class="mes">' + esc(x.mes) + '</td>' +
+                '<td class="num">' + fmtCantidad(x.m.ordenes) + '</td>' +
+                '<td class="num">' + fmtCantidad(x.m.sets) + '</td>' +
+                '<td class="num">' + fmtCantidad(x.m.piezas) + '</td>' +
+                '<td class="num">' + fmtCantidad(x.m.custom) + '</td>' +
+                '<td class="num">' + fmtCantidad(x.m.errores) + '</td>' +
+                '<td class="num">' + fmtCantidad(x.m.piezasError) + '</td>' +
+                '<td class="num">' + pctFmt(x.m.calidad) + '</td>' +
+            '</tr>');
+
+            cuerpo.innerHTML = ene.join('') +
+                '<tr class="total">' +
+                    '<td>TOTAL</td>' +
+                    '<td class="num">' + fmtCantidad(m.ordenes) + '</td>' +
+                    '<td class="num">' + fmtCantidad(m.sets) + '</td>' +
+                    '<td class="num">' + fmtCantidad(m.piezas) + '</td>' +
+                    '<td class="num">' + fmtCantidad(m.custom) + '</td>' +
+                    '<td class="num">' + fmtCantidad(m.errores) + '</td>' +
+                    '<td class="num">' + fmtCantidad(m.piezasError) + '</td>' +
+                    '<td class="num">' + pctFmt(m.calidad) + '</td>' +
+                '</tr>';
+        }
+
+        // Errores uno por uno
+        const lista = $('calErrores');
+        if (lista) {
+            const orden = m.conError.slice().sort((a, b) => (b[SALIDA.FECHA_NUM] || 0) - (a[SALIDA.FECHA_NUM] || 0));
+            lista.innerHTML = orden.length
+                ? orden.map(r => {
+                    const cat = clasificarErrorTexto(String(r[SALIDA.COMENTARIO] || ''));
+                    const fecha = r[SALIDA.FECHA_NUM] != null ? fmtNum(r[SALIDA.FECHA_NUM]) : '';
+                    return '<article class="err-card">' +
+                        '<span class="err-chip" style="--c:' + (COLOR_CAT[cat] || '#64748b') + '">' + esc(cat) + '</span>' +
+                        '<p>' + esc(r[SALIDA.COMENTARIO]) + '</p>' +
+                        '<div class="err-meta">' + esc(fecha) + ' · ' + esc(r[COL.ORDEN]) +
+                            ' · ' + fmtCantidad(numeroDe(r[COL.SETS])) + ' sets · ' + fmtCantidad(numeroDe(r[COL.PIEZAS])) + ' pzs</div>' +
+                    '</article>';
+                }).join('')
+                : '<div class="diag-vacio">Sin errores registrados en esos meses.</div>';
+        }
+    }
+
+    // Chips de meses (independiente de los filtros de arriba)
+    const chipsBox = $('mesChips');
+    if (chipsBox) {
+        chipsBox.addEventListener('click', ev => {
+            const b = ev.target && ev.target.closest ? ev.target.closest('.mes-chip') : null;
+            if (!b) return;
+            const mes = b.getAttribute('data-mes');
+            if (mesesCalidad.has(mes) && mesesCalidad.size > 1) mesesCalidad.delete(mes);
+            else mesesCalidad.add(mes);
+            updateCalidad();
+        });
     }
 
     /* ============================================================
