@@ -1179,6 +1179,11 @@
         const conRango = !!($('fechaDesde').value || $('fechaHasta').value);
         let txt = 'Mostrando ' + datos.length + ' de ' + allData.length + ' órdenes';
         if (conRango) txt += ' · rango de fechas activo (se ignora Año/Mes)';
+        const qActual = $('searchInput').value.trim();
+        const mesActual = $('monthSelector').value;
+        if (qActual && mesActual && !conRango) {
+            txt += ' · buscando solo en ' + mesActual + ' (pon "Todas las pestañas" para todo el libro)';
+        }
         $('filterInfo').textContent = txt;
 
         const heroSub = $('heroSub');
