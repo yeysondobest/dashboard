@@ -144,6 +144,10 @@
             background:linear-gradient(135deg,#38bdf8,#6366f1);color:#fff;font-size:11.5px;font-weight:800;
             border:2px solid rgba(255,255,255,.9);box-shadow:0 12px 22px -14px rgba(56,189,248,.95);
         }
+        .perfil{display:flex;align-items:center;gap:9px;padding-left:4px}
+        .perfil-txt{display:flex;flex-direction:column;line-height:1.2;white-space:nowrap}
+        .perfil-txt span{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
+        .perfil-txt b{font-size:11.5px;font-weight:700;color:var(--ink)}
         /* ── Encabezado / hero ────────────────────────────────── */
         .hero{margin:8px 4px 18px}
         .hero h1{font-size:clamp(24px,2.8vw,33px);font-weight:700;letter-spacing:-.035em;line-height:1.15}
@@ -428,7 +432,7 @@
             .quick{grid-column:1/-1}
             .topbar{padding:10px 12px}
             .topbar-right{width:100%;justify-content:flex-start}
-            .avatar{display:none}
+            .perfil-txt{display:none}
             .pill{font-size:10.5px}
             .panel{padding:16px}
             .table-section{padding:16px 14px 8px}
@@ -508,7 +512,13 @@
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 6.4"/><path d="M20 4v7h-7"/></svg>
                         Actualizar
                     </button>
-                    <div class="avatar" aria-hidden="true">DB</div>
+                    <div class="perfil" title="Designer: Yeyson Morrobel">
+                        <div class="avatar" aria-hidden="true">YM</div>
+                        <div class="perfil-txt">
+                            <span>Designer</span>
+                            <b>Yeyson Morrobel</b>
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -1195,6 +1205,12 @@
             tableCount.textContent = datos.length + (datos.length === 1 ? ' orden' : ' órdenes');
         }
 
+        if (!datos.length && qActual && mesActual && !conRango) {
+            $('emptyMsg').innerHTML = 'No hay órdenes que coincidan en <b>' + esc(mesActual) +
+                '</b>. <button type="button" id="buscarTodo" class="btn-ghost">Buscar en todo el libro</button>';
+        } else {
+            $('emptyMsg').textContent = 'No hay órdenes con estos filtros.';
+        }
         $('emptyMsg').classList.toggle('hidden', datos.length > 0);
     }
 
@@ -1937,6 +1953,17 @@
                 }).join('')
                 : '<div class="diag-vacio">Sin errores registrados en esos meses.</div>';
         }
+    }
+
+    // Clic en "Buscar en todo el libro" cuando el mes no tiene resultados
+    const vacioBox = $('emptyMsg');
+    if (vacioBox) {
+        vacioBox.addEventListener('click', ev => {
+            const b = ev.target && ev.target.closest ? ev.target.closest('#buscarTodo') : null;
+            if (!b) return;
+            $('monthSelector').value = '';
+            render();
+        });
     }
 
     // Chips de meses (independiente de los filtros de arriba)
