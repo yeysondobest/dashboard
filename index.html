@@ -289,6 +289,8 @@
         .cal-kpi b{font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.15;font-variant-numeric:tabular-nums}
         .cal-kpi span{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
         .cal-kpi small{font-size:10px;color:var(--muted)}
+        .cal-kpi.clicable{cursor:pointer;transition:background .15s,box-shadow .15s,transform .15s}
+        .cal-kpi.clicable:hover{background:#fff;box-shadow:0 12px 22px -18px rgba(16,57,92,.9);transform:translateY(-1px)}
         .cal-kpi.ok b{color:#047857}
         .cal-kpi.warn b{color:#b45309}
         .cal-kpi.bad b{color:#be123c}
@@ -357,6 +359,17 @@
         .status-ready{background:rgba(245,158,11,.17);color:#b45309}
         .priority-high{color:#be123c;font-weight:700}
         .priority-normal{color:var(--ink-2)}
+        .chip-custom{
+            display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;
+            font-size:9.5px;font-weight:700;letter-spacing:.02em;
+            color:#6d28d9;background:rgba(139,92,246,.16);border:1px solid rgba(139,92,246,.25);
+            vertical-align:middle;
+        }
+        .orden-cell{min-width:196px}
+        .pdf-sub{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;margin-top:4px}
+        .pdf-team{font-size:10.5px;font-weight:600;color:var(--ink-2);max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .pdf-tag{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;font-size:8.5px;font-weight:800;color:#6d28d9;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.25);flex:none}
+        .pdf-copy{padding:1px 6px;font-size:8.5px;font-weight:700;letter-spacing:.02em}
         .col-mes-cell{color:#0284c7;font-weight:600}
         .num{text-align:right;font-variant-numeric:tabular-nums}
         /* ── Ruta de la orden ─────────────────────────────────── */
@@ -486,7 +499,7 @@
             <header class="topbar glass animate-fade-in">
                 <label class="search-wrap">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                    <input type="text" id="searchInput" placeholder="Buscar por ID, orden, AP o comentario…" autocomplete="off">
+                    <input type="text" id="searchInput" placeholder="Buscar: SO, equipo, custom player/number/color…" autocomplete="off">
                 </label>
                 <div class="topbar-right">
                     <span class="pill">Fuente: <b id="sourceLabel">—</b></span>
@@ -530,6 +543,14 @@
                             <option value="">Todas</option>
                             <option value="alta">⚠️ Alta</option>
                             <option value="normal">Normal</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <span>Custom</span>
+                        <select id="customSelector" class="month-select">
+                            <option value="">Todas</option>
+                            <option value="si">Solo custom</option>
+                            <option value="no">Sin custom</option>
                         </select>
                     </div>
                     <div class="filter-item quick">
@@ -748,6 +769,7 @@
     const SOLO_EXACTO = ['id'];
 
     let allData = [], cargando = false, primeraCarga = true;
+    let MAPA_PDF = Object.create(null);   // indice de PDFs por numero de orden
     let statusChart = null, typeChart = null;
     let ultimaFuente = '', ultimoError = '';
 
@@ -1094,7 +1116,20 @@
         return s.indexOf('✅') >= 0 || s.indexOf('✔') >= 0 || /^true$/i.test(s) || /alta/i.test(s);
     };
 
-    const rowTexto = (r) => CAMPOS.map(f => r[COL[f]] || '').join(' ').toLowerCase();
+    const rowTexto = (r) => {
+        let txt = CAMPOS.map(f => r[COL[f]] || '').join(' ').toLowerCase();
+        const p = pdfDe(r);
+        if (p && !p.sinPdf) {
+            if (p.player) txt += ' custom player';
+            if (p.number) txt += ' custom number';
+            if (p.colorFlag) txt += ' custom color';
+            if (p.equipo) txt += ' ' + p.equipo;
+            if (p.color) txt += ' ' + p.color;
+            if (p.colores && p.colores.length) txt += ' ' + p.colores.join(' ');
+            if (p.archivo) txt += ' ' + p.archivo;
+        }
+        return txt;
+    };
 
     function filtrar() {
         const desde = isoToNum($('fechaDesde').value);
@@ -1105,6 +1140,7 @@
         const estado = $('estadoSelector').value;
         const tipo   = $('tipoSelector').value;
         const prio   = $('prioridadSelector').value;
+        const custom = $('customSelector').value;
         const q = $('searchInput').value.toLowerCase().trim();
 
         return allData.filter(r => {
@@ -1121,6 +1157,9 @@
 
             if (estado && (r[COL.ESTADO] || '') !== estado) return false;
             if (tipo && (r[COL.TIPO] || '') !== tipo) return false;
+            const esCust = /custom/i.test(String(r[SALIDA.CUSTOM] || ''));
+            if (custom === 'si' && !esCust) return false;
+            if (custom === 'no' && esCust) return false;
             if (prio === 'alta' && !esPrioridadAlta(r[COL.PRIORIDAD])) return false;
             if (prio === 'normal' && esPrioridadAlta(r[COL.PRIORIDAD])) return false;
             if (q && !rowTexto(r).includes(q)) return false;
@@ -1195,7 +1234,7 @@
     function animateNumber(id, destino) {
         const el = $(id);
         const actual = parseInt(el.textContent, 10) || 0;
-        if (actual === destino) { el.textContent = destino; return; }
+        if (actual === destino || document.hidden) { el.textContent = destino; return; }
         const paso = (destino - actual) / 20;
         let i = 0;
         const t = setInterval(() => {
@@ -1360,7 +1399,7 @@
                 `<td><span class="status-badge ${statusClass}">${esc(estado)}</span></td>` +
                 `<td class="${priorityClass}">${esc(prioridad)}</td>` +
                 `<td>${esc(row[COL.TIPO])}</td>` +
-                `<td>${esc(row[COL.ORDEN])}</td>` +
+                `<td class="orden-cell">${esc(row[COL.ORDEN])}${(/custom/i.test(String(row[SALIDA.CUSTOM] || '')) ? ' <span class="chip-custom">Custom</span>' : '')}${filaPdf(row)}</td>` +
                 `<td class="path-cell"><span class="path-wrap">${rutaHtml}</span></td>` +
                 `<td class="num">${esc(row[COL.SETS]) || '0'}</td>` +
                 `<td class="num">${esc(row[COL.PIEZAS]) || '0'}</td>` +
@@ -1423,7 +1462,7 @@
         rango(new Date(p.y, p.m, 1), new Date(p.y, p.m + 1, 0));
     });
     $('clearAll').addEventListener('click', () => {
-        ['yearSelector','monthSelector','estadoSelector','tipoSelector','prioridadSelector']
+        ['yearSelector','monthSelector','estadoSelector','tipoSelector','prioridadSelector','customSelector']
             .forEach(id => $(id).value = '');
         $('fechaDesde').value = '';
         $('fechaHasta').value = '';
@@ -1760,8 +1799,9 @@
         };
     }
 
-    function kpiCalidad(etiqueta, valor, nota, tono) {
-        return '<div class="cal-kpi' + (tono ? ' ' + tono : '') + '">' +
+    function kpiCalidad(etiqueta, valor, nota, tono, accion) {
+        return '<div class="cal-kpi' + (tono ? ' ' + tono : '') + (accion ? ' clicable' : '') + '"' +
+            (accion ? ' data-accion="' + accion + '" title="Ver estas órdenes en la lista"' : '') + '>' +
             '<b>' + valor + '</b><span>' + etiqueta + '</span>' +
             (nota ? '<small>' + nota + '</small>' : '') +
         '</div>';
@@ -1786,7 +1826,7 @@
             kpiCalidad('Órdenes', fmtCantidad(m.ordenes), m.dias + ' días con trabajo') +
             kpiCalidad('Sets', fmtCantidad(m.sets), '') +
             kpiCalidad('Piezas', fmtCantidad(m.piezas), 'meta ' + fmtCantidad(m.meta)) +
-            kpiCalidad('Custom', fmtCantidad(m.custom), 'órdenes custom') +
+            kpiCalidad('Custom', fmtCantidad(m.custom), 'órdenes custom · clic para filtrar', '', 'custom') +
             kpiCalidad('Eficiencia', pctFmt(m.eficiencia), 'vs ' + fmtCantidad(META_PIEZAS_MES) + '/mes') +
             kpiCalidad('Errores', fmtCantidad(m.errores), 'órdenes observadas') +
             kpiCalidad('Pzs con error', fmtCantidad(m.piezasError), 'de ' + fmtCantidad(m.piezas));
@@ -1907,9 +1947,59 @@
         });
     }
 
+    // Clic en el KPI de Custom: filtra la lista por órdenes custom
+    const kpisBox = $('calKpis');
+    if (kpisBox) {
+        kpisBox.addEventListener('click', ev => {
+            const el = ev.target && ev.target.closest ? ev.target.closest('[data-accion="custom"]') : null;
+            if (!el) return;
+            const sel = $('customSelector');
+            if (!sel) return;
+            sel.value = 'si';
+            render();
+            const destino = $('ordenes');
+            if (destino) destino.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+
     /* ============================================================
        EXTRAS DE INTERFAZ (badges, totales, saludo, atajos, ruta, nav)
        ============================================================ */
+    function pdfDe(r) {
+        const m = String(r[COL.ORDEN] || '').match(/\d+/);
+        return m ? (MAPA_PDF[m[0]] || null) : null;
+    }
+
+    function filaPdf(r) {
+        const p = pdfDe(r);
+        if (!p || p.sinPdf) return '';
+        const equipo = p.equipo ? esc(p.equipo) : '';
+        const tags =
+            (p.player ? '<span class="pdf-tag" title="custom player">P</span>' : '') +
+            (p.number ? '<span class="pdf-tag" title="custom number">N</span>' : '') +
+            (p.colorFlag ? '<span class="pdf-tag" title="custom color">C</span>' : '');
+        const btn = p.rutaPdf
+            ? '<button type="button" class="copy-path pdf-copy" data-path="' + esc(p.rutaPdf) + '" title="Copiar ruta del PDF">PDF</button>'
+            : '';
+        if (!equipo && !tags && !btn) return '';
+        return '<div class="pdf-sub">' +
+            (equipo ? '<span class="pdf-team" title="' + equipo + '">' + equipo + '</span>' : '') +
+            tags + btn +
+        '</div>';
+    }
+
+    async function cargarPdfs() {
+        try {
+            const r = await fetch('pdfs.json?t=' + Date.now(), { cache: 'no-store' });
+            if (!r.ok) return;
+            const j = await r.json();
+            if (j && j.items) {
+                MAPA_PDF = j.items;
+                if (allData.length) render();
+            }
+        } catch (e) { /* si no existe pdfs.json, todo sigue igual */ }
+    }
+
     function numeroDe(v) {
         if (v == null) return 0;
         if (typeof v === 'number') return isFinite(v) ? v : 0;
@@ -2046,6 +2136,7 @@
        INICIO
        ============================================================ */
     cargarTodo();
+    cargarPdfs();
     setInterval(cargarTodo, REFRESCO_MS);
     </script>
 </body>
