@@ -585,6 +585,7 @@
                     <div class="total-item accent"><b id="sumOrdenes">0</b><span>Órdenes</span></div>
                     <div class="total-item"><b id="sumSets">0</b><span>Sets</span></div>
                     <div class="total-item"><b id="sumPiezas">0</b><span>Piezas</span></div>
+                    <div class="total-item"><b id="sumCustom">0</b><span>Custom</span></div>
                 </div>
             </section>
 
@@ -733,7 +734,7 @@
                     <table id="ordersTable">
                         <thead>
                             <tr>
-                                <th>ID</th><th>Fecha</th><th>Estado</th><th>Prioridad</th><th>Tipo</th>
+                                <th>ID</th><th>Fecha</th><th>Estado</th><th>Prioridad</th><th>Tipo</th><th>Custom</th>
                                 <th>Orden</th><th>Ruta</th><th class="num">Sets</th><th class="num">Piezas</th><th title="Prime center (columna U)">AP</th><th title="Quién revisó la orden (columna R)">QC</th>
                             </tr>
                         </thead>
@@ -1228,12 +1229,14 @@
         animateNumber('inProgressOrders', enProceso);
         animateNumber('highPriority', alta);
 
-        // Totales de la selección: órdenes, sets y piezas
+        // Totales de la selección: órdenes, sets, piezas y custom
         const sets = data.reduce((t, r) => t + numeroDe(r[COL.SETS]), 0);
         const piezas = data.reduce((t, r) => t + numeroDe(r[COL.PIEZAS]), 0);
+        const custom = data.filter(r => /custom/i.test(String(r[SALIDA.CUSTOM] || ''))).length;
         $('sumOrdenes').textContent = fmtCantidad(total);
         $('sumSets').textContent = fmtCantidad(sets);
         $('sumPiezas').textContent = fmtCantidad(piezas);
+        $('sumCustom').textContent = fmtCantidad(custom);
 
         const figOrdenes = $('tableOrdersFig');
         const figSets = $('tableSetsFig');
@@ -1420,7 +1423,8 @@
                 `<td><span class="status-badge ${statusClass}">${esc(estado)}</span></td>` +
                 `<td class="${priorityClass}">${esc(prioridad)}</td>` +
                 `<td>${esc(row[COL.TIPO])}</td>` +
-                `<td class="orden-cell">${esc(row[COL.ORDEN])}${(/custom/i.test(String(row[SALIDA.CUSTOM] || '')) ? ' <span class="chip-custom">Custom</span>' : '')}${filaPdf(row)}</td>` +
+                `<td>${(/custom/i.test(String(row[SALIDA.CUSTOM] || '')) ? '<span class="chip-custom">Custom</span>' : '—')}</td>` +
+                `<td class="orden-cell">${esc(row[COL.ORDEN])}${filaPdf(row)}</td>` +
                 `<td class="path-cell"><span class="path-wrap">${rutaHtml}</span></td>` +
                 `<td class="num">${esc(row[COL.SETS]) || '0'}</td>` +
                 `<td class="num">${esc(row[COL.PIEZAS]) || '0'}</td>` +
